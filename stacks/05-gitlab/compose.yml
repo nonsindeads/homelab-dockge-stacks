@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:16.11.4-ce.0
+    container_name: gitlab
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url "${GITLAB_EXTERNAL_URL}"
+        gitlab_rails['gitlab_shell_ssh_port'] = ${GITLAB_SSH_PORT}
+    ports:
+      - "${WG_BIND_IP}:${GITLAB_WEB_PORT}:80"
+      - "${WG_BIND_IP}:${GITLAB_SSH_PORT}:22"
+    volumes:
+      - gitlab_config:/etc/gitlab
+      - gitlab_logs:/var/log/gitlab
+      - gitlab_data:/var/opt/gitlab
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost/-/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 180s
+
+volumes:
+  gitlab_config:
+  gitlab_logs:
+  gitlab_data:

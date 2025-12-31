@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  dockge:
+    image: louislam/dockge:1.4.2
+    container_name: dockge
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ}
+      - DOCKGE_STACKS_DIR=/opt/stacks
+    ports:
+      - "${WG_BIND_IP}:${DOCKGE_UI_PORT}:5001"
+    volumes:
+      - dockge_data:/app/data
+      - ${DOCKGE_STACKS_HOST_DIR}:/opt/stacks
+      - /var/run/docker.sock:/var/run/docker.sock
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5001/ >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  dockge_data:

@@ -1,0 +1,15 @@
+stages:
+  - validate
+
+validate:
+  stage: validate
+  image: docker:27.2.0
+  services:
+    - name: docker:27.2.0-dind
+      command: ["--tls=false"]
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - sh scripts/validate-ports.sh
+    - for f in stacks/*/compose.yml; do docker compose -f "$f" --env-file "$(dirname "$f")/.env.example" config >/dev/null; done
