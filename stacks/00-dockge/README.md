@@ -5,7 +5,7 @@ This stack runs Dockge to manage the other stacks in this repository.
 ## Setup
 1. Copy `.env.example` to `.env` (use `scripts/render-env.sh` from the repo root).
 2. Set `WG_BIND_IP` to the WireGuard interface IP you want to bind the UI to.
-3. Set `DOCKGE_STACKS_HOST_DIR` to the absolute host path of the repo `stacks/` directory.
+3. Set `DOCKGE_STACKS_HOST_DIR` to the absolute host path of the repo `stacks/` directory (example: `/root/projects/homelab-dockge/homelab-dockge-stacks/stacks`).
 4. Start the stack from Dockge or via `docker compose up -d`.
 
 ## Notes
