@@ -5,6 +5,7 @@ This stack provides an OpenVPN server for remote clients. Client traffic is conf
 ## Setup
 1. Copy `.env.example` to `.env` (use `scripts/render-env.sh` from the repo root).
 2. Set `OPENVPN_REMOTE_HOST`, `OPENVPN_BIND_IP`, and `OPENVPN_DNS` (Pi-hole DNS IP). `OPENVPN_SERVER_IP` documents the VPN server IP (default `10.9.0.1`). If the image tag fails to pull, update `OPENVPN_IMAGE_TAG` in `.env`.
+3. To keep local 192.168.x.x networks reachable while connected, set `OPENVPN_LOCAL_NETS` (default `192.168.0.0/16`).
 3. Initialize the server PKI and base config:
    - `scripts/openvpn.sh init`
 4. Create a client profile:
@@ -13,5 +14,6 @@ This stack provides an OpenVPN server for remote clients. Client traffic is conf
 
 ## Notes
 - Uses `/dev/net/tun` and `NET_ADMIN` to run the VPN tunnel.
-- The init step pushes `redirect-gateway def1` (full-tunnel) and the DNS server from `OPENVPN_DNS`.
+- The init step pushes `redirect-gateway def1` (full-tunnel), enables `client-to-client`, and sets DNS from `OPENVPN_DNS`.
+- Local network routes from `OPENVPN_LOCAL_NETS` are pushed with `net_gateway` so clients keep access to their local 192.168.x.x networks.
 - Store generated `.ovpn` files outside this repository.

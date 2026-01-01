@@ -60,11 +60,36 @@ cmd_init() {
     exit 1
   fi
 
-  compose run --rm openvpn ovpn_genconfig \
+  set -- \
     -u "udp://${OPENVPN_REMOTE_HOST}:${OPENVPN_PORT}" \
     -d "${OPENVPN_DNS}" \
     -s "${OPENVPN_SUBNET}" \
-    -p "redirect-gateway def1"
+    -p "redirect-gateway def1" \
+    -p "client-to-client"
+
+  if [ -n "${OPENVPN_LOCAL_NETS:-}" ]; then
+    for net in $OPENVPN_LOCAL_NETS; do
+      route=$(awk -v cidr="$net" 'BEGIN{
+        split(cidr,a,"/");
+        ip=a[1]; bits=a[2];
+        if (bits=="" || bits<0 || bits>32) exit 1;
+        for (i=1;i<=4;i++) {
+          if (bits>=8) {m=255; bits-=8}
+          else if (bits>0) {m=256-2^(8-bits); bits=0}
+          else {m=0}
+          mask=(i==1)?m:mask "." m
+        }
+        print ip, mask
+      }')
+      if [ -z "$route" ]; then
+        echo "error: invalid OPENVPN_LOCAL_NETS entry: $net (use CIDR, e.g. 192.168.0.0/16)" >&2
+        exit 1
+      fi
+      set -- "$@" -p "route $route net_gateway"
+    done
+  fi
+
+  compose run --rm openvpn ovpn_genconfig "$@"
 
   compose run --rm openvpn ovpn_initpki
 }
