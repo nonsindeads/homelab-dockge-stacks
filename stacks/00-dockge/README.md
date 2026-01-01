@@ -12,3 +12,4 @@ This stack runs Dockge to manage the other stacks in this repository.
 - UI is exposed on `${WG_BIND_IP}:${DOCKGE_UI_PORT}` (container port 5001).
 - The Docker socket is mounted so Dockge can manage stacks.
 - Data persists in the `dockge_data` named volume.
+- If you see a Docker API version error, set `DOCKER_API_VERSION=1.44` in `.env`.
