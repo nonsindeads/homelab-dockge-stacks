@@ -23,7 +23,27 @@ for dir in $dirs; do
   fi
 
   if [ -f "$dest" ] && [ "$force" -ne 1 ]; then
-    echo "exists: $dest (use --force to overwrite)" >&2
+    # Merge new keys without overwriting existing values.
+    added=0
+    while IFS= read -r line; do
+      case "$line" in
+        ''|\#*) continue ;;
+      esac
+      case "$line" in
+        [A-Za-z_][A-Za-z0-9_]*=*)
+          key=${line%%=*}
+          if ! grep -q "^${key}=" "$dest"; then
+            printf '%s\n' "$line" >> "$dest"
+            added=$((added + 1))
+          fi
+          ;;
+      esac
+    done < "$src"
+    if [ "$added" -gt 0 ]; then
+      echo "merged: $dest ($added new keys)"
+    else
+      echo "up-to-date: $dest"
+    fi
     continue
   fi
 
